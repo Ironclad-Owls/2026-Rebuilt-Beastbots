@@ -29,23 +29,23 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(0.0);
+  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(1.57);
   public static final Rotation2d frontRightZeroRotation = new Rotation2d(0.0);
   public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.0);
-  public static final Rotation2d backRightZeroRotation = new Rotation2d(0.0);
+  public static final Rotation2d backRightZeroRotation = new Rotation2d(-1.57);
 
   // Device CAN IDs
-  public static final int pigeonCanId = 9;
+  public static final int pigeonCanId = 10;
 
-  public static final int frontLeftDriveCanId = 1;
-  public static final int backLeftDriveCanId = 3;
-  public static final int frontRightDriveCanId = 5;
-  public static final int backRightDriveCanId = 7;
+  public static final int frontLeftDriveCanId = 2;
+  public static final int backLeftDriveCanId = 6;
+  public static final int frontRightDriveCanId = 4;
+  public static final int backRightDriveCanId = 8;
 
-  public static final int frontLeftTurnCanId = 2;
-  public static final int backLeftTurnCanId = 4;
-  public static final int frontRightTurnCanId = 6;
-  public static final int backRightTurnCanId = 8;
+  public static final int frontLeftTurnCanId = 3;
+  public static final int backLeftTurnCanId = 5;
+  public static final int frontRightTurnCanId = 9;
+  public static final int backRightTurnCanId = 7;
 
   // Drive motor configuration
   public static final int driveMotorCurrentLimit = 50;

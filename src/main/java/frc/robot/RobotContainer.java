@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,11 +17,10 @@ import frc.robot.subsystems.Intake.*;
 import frc.robot.subsystems.Led.*;
 import frc.robot.subsystems.Shooter.*;
 import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.ClimbIOReal;
-import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOCanandgyro;
+// import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
@@ -39,6 +39,7 @@ public class RobotContainer {
   private Climb climb;
   private Hopper hopper;
   private Led led;
+  private Canandgyro m_gyro;
 
   // Controllers
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -48,22 +49,23 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        shooter = Shooter.Initialize(new ShooterIOReal());
-        intake = Intake.Initialize(new IntakeIOReal());
-        climb = Climb.Initialize(new ClimbIOReal());
-        hopper = Hopper.Initialize(new HopperIOReal());
+        m_gyro = new Canandgyro(0);
+        // shooter = Shooter.Initialize(new ShooterIOReal());
+        // intake = Intake.Initialize(new IntakeIOReal());
+        // climb = Climb.Initialize(new ClimbIOReal());
+        // hopper = Hopper.Initialize(new HopperIOReal());
         drive =
             new Drive(
-                new GyroIOPigeon2(),
+                new GyroIOCanandgyro(0),
                 new ModuleIOSpark(0),
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         break;
       case SIM:
-        shooter = Shooter.Initialize(new ShooterIOSim());
-        intake = Intake.Initialize(new IntakeIOSim());
-        climb = Climb.Initialize(new ClimbIOSim());
+        // shooter = Shooter.Initialize(new ShooterIOSim());
+        // intake = Intake.Initialize(new IntakeIOSim());
+        // climb = Climb.Initialize(new ClimbIOSim());
         drive =
             new Drive(
                 new GyroIO() {},
@@ -71,12 +73,12 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        hopper = Hopper.Initialize(new HopperIOSim());
+        // hopper = Hopper.Initialize(new HopperIOSim());
         break;
       default:
-        shooter = Shooter.Initialize(new ShooterIOSim());
-        intake = Intake.Initialize(new IntakeIOSim());
-        climb = Climb.Initialize(new ClimbIOSim());
+        // shooter = Shooter.Initialize(new ShooterIOSim());
+        // intake = Intake.Initialize(new IntakeIOSim());
+        // climb = Climb.Initialize(new ClimbIOSim());
         drive =
             new Drive(
                 new GyroIO() {},
@@ -84,7 +86,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        hopper = Hopper.Initialize(new HopperIOSim());
+        // hopper = Hopper.Initialize(new HopperIOSim());
         break;
     }
     led = Led.getInstance();
@@ -102,22 +104,23 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    climb.setDefaultCommand(Commands.run(() -> climb.setVoltage(0), climb));
+    // climb.setDefaultCommand(Commands.run(() -> climb.setVoltage(0), climb));
 
-    operatorController.leftTrigger().whileTrue(Commands.run(() -> climb.setVoltage(-10)));
-    operatorController.rightTrigger().whileTrue(Commands.run(() -> climb.setVoltage(10)));
+    // operatorController.leftTrigger().whileTrue(Commands.run(() -> climb.setVoltage(-10)));
+    // operatorController.rightTrigger().whileTrue(Commands.run(() -> climb.setVoltage(10)));
 
-    shooter.setDefaultCommand(Commands.run(() -> shooter.setIntakeVoltage(0), shooter));
+    // shooter.setDefaultCommand(Commands.run(() -> shooter.setIntakeVoltage(0), shooter));
 
-    operatorController
-        .rightBumper()
-        .onTrue(
-            Commands.run(() -> shooter.setIntakeVoltage(ShooterConstants.shooterVoltage), shooter));
+    // operatorController
+    //     .rightBumper()
+    //     .onTrue(
+    //         Commands.run(() -> shooter.setIntakeVoltage(ShooterConstants.shooterVoltage),
+    // shooter));
 
-    operatorController
-        .leftBumper()
-        .onTrue(Commands.run(() -> intake.setVoltage(10), intake))
-        .onFalse(Commands.run(() -> intake.setVoltage(0), intake));
+    // operatorController
+    //     .leftBumper()
+    //     .onTrue(Commands.run(() -> intake.setVoltage(10), intake))
+    //     .onFalse(Commands.run(() -> intake.setVoltage(0), intake));
 
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
