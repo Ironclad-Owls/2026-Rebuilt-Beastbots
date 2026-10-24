@@ -29,6 +29,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -372,6 +373,83 @@ public class DriveCommands {
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
                     })));
+  }
+
+  /**
+   * Drives the robot in a closed loop to a target field-relative Pose2d and finishes when within
+   * tolerance.
+   */
+  public static Command driveToPose(Drive drive, Supplier<Pose2d> targetPoseSupplier) {
+    // 20% of max linear speed (4.8 m/s * 0.2 = 0.96 m/s) and max accel (4.0 m/s^2 * 0.2 = 0.8
+    // m/s^2)
+    final double limitRatio = 0.2; // 20%
+    final double maxLinearVel = DriveConstants.maxSpeedMetersPerSec * limitRatio; // 0.96 m/s
+    final double maxLinearAccel = 4.0 * limitRatio; // 0.8 m/s^2
+    final double maxAngularVel = ANGLE_MAX_VELOCITY * limitRatio;
+    final double maxAngularAccel = ANGLE_MAX_ACCELERATION * limitRatio;
+
+    ProfiledPIDController xController =
+        new ProfiledPIDController(
+            1.5, 0.0, 0.0, new TrapezoidProfile.Constraints(maxLinearVel, maxLinearAccel));
+    ProfiledPIDController yController =
+        new ProfiledPIDController(
+            1.5, 0.0, 0.0, new TrapezoidProfile.Constraints(maxLinearVel, maxLinearAccel));
+    ProfiledPIDController thetaController =
+        new ProfiledPIDController(
+            2.0, 0.0, 0.0, new TrapezoidProfile.Constraints(maxAngularVel, maxAngularAccel));
+
+    thetaController.enableContinuousInput((-Math.PI), Math.PI);
+    xController.setTolerance(0.03);
+    yController.setTolerance(0.03);
+    thetaController.setTolerance(Units.degreesToRadians(2.0));
+
+    return Commands.run(
+            () -> {
+              Pose2d currentPose = drive.getPose();
+              Pose2d targetPose = targetPoseSupplier.get();
+
+              double vx =
+                  MathUtil.clamp(
+                      xController.calculate(currentPose.getX(), targetPose.getX())
+                          + xController.getSetpoint().velocity,
+                      -maxLinearVel,
+                      maxLinearVel);
+              double vy =
+                  MathUtil.clamp(
+                      yController.calculate(currentPose.getY(), targetPose.getY())
+                          + yController.getSetpoint().velocity,
+                      -maxLinearVel,
+                      maxLinearVel);
+              double omega =
+                  MathUtil.clamp(
+                      thetaController.calculate(
+                          currentPose.getRotation().getRadians(),
+                          targetPose.getRotation().getRadians()),
+                      -maxAngularVel,
+                      maxAngularVel);
+
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, currentPose.getRotation()));
+            },
+            drive)
+        .beforeStarting(
+            () -> {
+              Pose2d currentPose = drive.getPose();
+              xController.reset(currentPose.getX());
+              yController.reset(currentPose.getY());
+              thetaController.reset(currentPose.getRotation().getRadians());
+            })
+        .until(() -> xController.atGoal() && yController.atGoal() && thetaController.atGoal())
+        .finallyDo(drive::stop);
+  }
+
+  /**
+   * Drives the rbot in a sideLengthMeters x sideLengthMeters square relative to its pose when the
+   * command starts, keeping its initial heading.
+   */
+  public static Command driveSquare(Drive drive, double sideLengthMeters) {
+    // TODO: implement command sequence to drive the robot in a square;
+    return Commands.defer(null, Set.of(drive));
   }
 
   private static class WheelRadiusCharacterizationState {
